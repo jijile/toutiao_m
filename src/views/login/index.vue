@@ -16,13 +16,16 @@
         <van-field
         v-model="user.code"
         type="number"
-        name="密码"
-        placeholder="请输入密码"
+        name="验证码"
+        placeholder="请输入验证码"
         >
          <i slot="left-icon" class="iconfont icon-yanzhengma"></i>
+          <template #button>
+            <van-button class="send-sms-btn" size="small" round type="default">发送验证码</van-button>
+          </template>
         </van-field>
-        <div style="margin: 16px;">
-            <van-button  block type="info" native-type="submit">登录</van-button>
+        <div class="login-btn-wrap">
+            <van-button  class="login-btn" block type="info" native-type="submit">登录</van-button>
         </div>
         </van-form>
   </div>
@@ -69,5 +72,22 @@ export default {
   .iconfont {
     font-size: 37px;
   }
+}
+.send-sms-btn {
+  background-color: #ededed;
+  line-height: 46px;
+  font-style: 12px;
+  width: 162px;
+  height: 46px;
+  color: #666;
+}
+
+.login-btn-wrap {
+  padding: 53px 33px;
+  .login-btn {
+    background-color: #6db4fb;
+    border: none;
+  }
+
 }
 </style>
