@@ -5,23 +5,29 @@
        <!-- 登录表单 -->
        <van-form @submit="onSubmit">
         <van-field
+        ref="loginForm"
         v-model="user.mobile"
-        name="用户名"
+        name="mobile"
         type="number"
         placeholder="请输入手机号"
         left-icon="smile-o"
+        :rules="userFormRules.mobile"
+        maxlength="11"
         >
          <i slot="left-icon" class="iconfont icon-shouji"></i>
         </van-field>
         <van-field
         v-model="user.code"
         type="number"
-        name="验证码"
+        name="code"
         placeholder="请输入验证码"
+        :rules="userFormRules.code"
+        maxlength="6"
         >
          <i slot="left-icon" class="iconfont icon-yanzhengma"></i>
           <template #button>
-            <van-button class="send-sms-btn" size="small" round type="default">发送验证码</van-button>
+            <van-count-down v-if="isCountDownShow" :time="1000 * 10" format="ss s" />
+            <van-button v-else class="send-sms-btn" size="small" round type="default" @click="onSendSms" native-type="button">发送验证码</van-button>
           </template>
         </van-field>
         <div class="login-btn-wrap">
@@ -42,7 +48,25 @@ export default {
       user: {
         mobile: '',
         code: ''
-      }
+      },
+      userFormRules: {
+        mobile: [{
+          required: true,
+          message: '手机号不能空'
+        },
+        {
+          pattern: /^1[3|5|6|8]\d{9}$/,
+          message: '手机号格式错误！'
+        }],
+        code: [{
+          required: true,
+          message: '验证码不能为空'
+        }, {
+          pattern: /^\d{6}$/,
+          message: '验证码格式不正确！'
+        }]
+      },
+      isCountDownShow: false // 是否显示倒计时
     }
   },
   computed: {},
@@ -51,17 +75,38 @@ export default {
   mounted () {},
   methods: {
     async onSubmit () {
-      // 获取吧表单数据
+      // 获取表单数据
 
       // 2、验证表单数据
 
       // 3、提交表单请求
+      this.$toast.loading({
+        message: '登录中...',
+        forbidClick: true, // 禁用背景点击
+        duration: 0
+      })
       try {
         await login(this.user)
+        this.$toast.success('登录成功！')
         console.log('登录成功！')
       } catch (error) {
-        console.log('登录失败', error)
+        if (error.response.status === 400) {
+          this.$toast.fail('手机号或者密码错误！')
+        } else {
+          this.$toast.fail('未知错误，稍后重试！')
+        }
       }
+    },
+    async onSendSms () {
+      // 验证手机号
+      try {
+        await this.$refs.loginForm.validate('mobile')
+        console.log('验证通过！')
+      } catch (error) {
+        return console.log('验证失败', error)
+      }
+      // 显示倒计时
+      this.isCountDownShow = true
     }
   }
 }
