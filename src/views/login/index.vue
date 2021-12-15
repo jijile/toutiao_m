@@ -1,7 +1,9 @@
 <template>
   <div class="logi-container">
       <!-- 导航栏 -->
-      <van-nav-bar title="登录" class="page-nav-bar" />
+      <van-nav-bar title="登录" class="page-nav-bar">
+        <van-icon slot="left" name="cross" @click="$router.back()"/>
+      </van-nav-bar>
        <!-- 登录表单 -->
        <van-form @submit="onSubmit">
         <van-field
@@ -26,7 +28,7 @@
         >
          <i slot="left-icon" class="iconfont icon-yanzhengma"></i>
           <template #button>
-            <van-count-down v-if="isCountDownShow" :time="1000 * 10" format="ss s" />
+            <van-count-down v-if="isCountDownShow" :time="1000 * 10" format="ss s" @finish="isCountDownShow = false" />
             <van-button v-else class="send-sms-btn" size="small" round type="default" @click="onSendSms" native-type="button">发送验证码</van-button>
           </template>
         </van-field>
@@ -38,7 +40,7 @@
 </template>
 
 <script>
-import { login } from '@/api/user'
+import { login, sendSms } from '@/api/user'
 export default {
   name: 'LoginIndex',
   components: {},
@@ -86,7 +88,8 @@ export default {
         duration: 0
       })
       try {
-        await login(this.user)
+        const { data } = await login(this.user)
+        this.$store.commit('setUser', data.data) // 将用户信息保存到vuex
         this.$toast.success('登录成功！')
         console.log('登录成功！')
       } catch (error) {
@@ -100,13 +103,26 @@ export default {
     async onSendSms () {
       // 验证手机号
       try {
-        await this.$refs.loginForm.validate('mobile')
+        // await this.$refs.loginForm.validata('mobile')
         console.log('验证通过！')
       } catch (error) {
         return console.log('验证失败', error)
       }
       // 显示倒计时
       this.isCountDownShow = true
+
+      // 发送验证码
+      try {
+        await sendSms(this.user.mobile)
+        this.$toast.success('发送验证码成功')
+      } catch (error) {
+        this.isCountDownShow = false // 隐藏倒计时
+        if (error.response.status === 429) {
+          this.$toast('操作过于频繁，请稍后重试！')
+        } else {
+          this.$toast('发送验证码失败，请稍后重试')
+        }
+      }
     }
   }
 }
