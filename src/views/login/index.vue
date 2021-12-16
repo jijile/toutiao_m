@@ -91,6 +91,7 @@ export default {
         const { data } = await login(this.user)
         this.$store.commit('setUser', data.data) // 将用户信息保存到vuex
         this.$toast.success('登录成功！')
+        this.$router.back() // 从哪里来回哪里去，但是不信严谨
         console.log('登录成功！')
       } catch (error) {
         if (error.response.status === 400) {
@@ -98,12 +99,19 @@ export default {
         } else {
           this.$toast.fail('未知错误，稍后重试！')
         }
+        // 假数据，假操作
+        const data = {
+          refresh_token: 'asdhjaksdhjkasdjk',
+          token: 'shdjkjalk4545'
+        }
+        this.$store.commit('setUser', data) // 将用户信息保存到vuex
+        this.$router.back()
       }
     },
     async onSendSms () {
       // 验证手机号
       try {
-        // await this.$refs.loginForm.validata('mobile')
+        await this.$refs.loginForm.validata('mobile')
         console.log('验证通过！')
       } catch (error) {
         return console.log('验证失败', error)

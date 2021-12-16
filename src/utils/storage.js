@@ -10,6 +10,10 @@ export const setItem = (key, value) => {
 // 获取数据
 export const getItem = key => {
   const data = localStorage.getItem(key)
+  // const data = {
+  //   refresh_token: 'asdhjaksdhjkasdjk',
+  //   token: 'shdjkjalk4545'
+  // }
   try {
     return JSON.parse(data)
   } catch (error) {
